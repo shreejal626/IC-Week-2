@@ -7,3 +7,5 @@ Week 2 Homework
 3. Create a new table called Store that will give the details of where the sale was made. This should contain "Name" and "Location"
 
 4. Add the Store to the sale table
+
+5. 
