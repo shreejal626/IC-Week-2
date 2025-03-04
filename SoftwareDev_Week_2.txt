@@ -70,9 +70,9 @@ SET ANSI_NULLS ON
 GO
 SET QUOTED_IDENTIFIER ON
 GO
-CREATE view [dbo].[CustomerSales]
+ALTER view [dbo].[CustomerSales]
 as
-select c.Id as 'Customer Id', c.FirstName, c.LastName, s.DateSold, p.[Name], p.Price
+select c.Id as 'Customer Id', c.FirstName, c.LastName, CONCAT(c.FirstName, ' ', c.LastName) as 'Full Name', s.DateSold, p.[Name], p.Price
 , [dbo].[GetCustomerAmount](c.Id) as 'Total Purchases'
 	from Customer c
 		left join 
@@ -138,3 +138,45 @@ values
 
 end
 GO
+
+CREATE PROCEDURE GetCustomerAge 
+    @CustomerId INT
+AS
+BEGIN
+    SET NOCOUNT ON;
+
+    SELECT DATEDIFF(YEAR, DateOfBirth, GETDATE()) 
+           - CASE 
+                 WHEN (MONTH(DateOfBirth) > MONTH(GETDATE())) 
+                      OR (MONTH(DateOfBirth) = MONTH(GETDATE()) AND DAY(DateOfBirth) > DAY(GETDATE())) 
+                 THEN 1 
+                 ELSE 0 
+             END AS Age
+    FROM Customer
+    WHERE Id = @CustomerId;
+END;
+GO
+
+EXEC GetCustomerAge @CustomerId = 1;
+
+GO
+
+CREATE TABLE [dbo].[Store] (
+    [Id] INT IDENTITY(1,1) PRIMARY KEY, 
+    [Name] NVARCHAR(100) NOT NULL, 
+    [Location] NVARCHAR(255) NOT NULL
+);
+GO
+
+ALTER TABLE [dbo].[Sale] 
+ADD StoreId INT NULL;
+
+GO
+
+ALTER TABLE [dbo].[Sale] WITH CHECK ADD CONSTRAINT [FK_Sale_Store] FOREIGN KEY ([StoreId]) 
+REFERENCES [dbo].[Store] ([Id])
+
+GO
+
+
+
